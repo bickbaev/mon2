@@ -213,3 +213,61 @@ test('move violating type rules is rejected and tree unchanged', function () {
     nodes()->move($branch, $orgB);
     expect($branch->fresh()->path)->toBe("/{$root->id}/{$orgB->id}/{$branch->id}/");
 });
+
+test('move down and up recalculates depth and path of whole branch', function () {
+    $root = nodes()->create(null, NodeType::Authority, 'Корень');
+    $a = nodes()->create($root, NodeType::Authority, 'A');
+    $b = nodes()->create($root, NodeType::Authority, 'B');
+    $b1 = nodes()->create($b, NodeType::Authority, 'B1');
+    $x = nodes()->create($a, NodeType::Authority, 'X');
+    $x1 = nodes()->create($x, NodeType::Authority, 'X1');
+    $org = nodes()->create($x1, NodeType::Organization, 'Школа');
+    $branch = nodes()->create($org, NodeType::Branch, 'Филиал');
+    $bystander = nodes()->create($b1, NodeType::Organization, 'Посторонняя');
+
+    $assertBranch = function (string $prefix, int $xDepth) use ($x, $x1, $org, $branch) {
+        $expected = [
+            [$x, $prefix.$x->id.'/', $xDepth],
+            [$x1, $prefix.$x->id.'/'.$x1->id.'/', $xDepth + 1],
+            [$org, $prefix.$x->id.'/'.$x1->id.'/'.$org->id.'/', $xDepth + 2],
+            [$branch, $prefix.$x->id.'/'.$x1->id.'/'.$org->id.'/'.$branch->id.'/', $xDepth + 3],
+        ];
+        foreach ($expected as [$node, $path, $depth]) {
+            $fresh = $node->fresh();
+            expect($fresh->path)->toBe($path)->and($fresh->depth)->toBe($depth);
+        }
+    };
+
+    $bystanderBefore = $bystander->fresh()->only(['path', 'depth']);
+
+    // вниз: X (depth 2) -> под B1 (depth 2), дельта +1
+    nodes()->move($x, $b1);
+    $assertBranch("/{$root->id}/{$b->id}/{$b1->id}/", 3);
+    expect($x->fresh()->parent_id)->toBe($b1->id);
+
+    // вверх: X (depth 3) -> под корень (depth 0), дельта -2, колонка UNSIGNED
+    nodes()->move($x, $root);
+    $assertBranch("/{$root->id}/", 1);
+    expect($x->fresh()->parent_id)->toBe($root->id)
+        ->and($bystander->fresh()->only(['path', 'depth']))->toBe($bystanderBefore);
+});
+
+test('create uses fresh parent state after parent was moved', function () {
+    $root = nodes()->create(null, NodeType::Authority, 'Корень');
+    $a = nodes()->create($root, NodeType::Authority, 'A');
+    $b = nodes()->create($root, NodeType::Authority, 'B');
+    $b2 = nodes()->create($b, NodeType::Authority, 'B2');
+    $sub = nodes()->create($a, NodeType::Authority, 'Отдел');
+
+    // устаревшая модель родителя: path /root/a/sub/, depth 2
+    $stale = Node::find($sub->id);
+
+    nodes()->move($sub, $b2);
+
+    $org = nodes()->create($stale, NodeType::Organization, 'Школа');
+
+    expect($org->path)->toBe("/{$root->id}/{$b->id}/{$b2->id}/{$sub->id}/{$org->id}/")
+        ->and($org->depth)->toBe(4)
+        ->and($org->fresh()->path)->toBe($org->path)
+        ->and(Node::query()->inBranch($sub, false)->pluck('id')->all())->toBe([$org->id]);
+});

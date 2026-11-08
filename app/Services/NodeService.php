@@ -13,15 +13,21 @@ class NodeService
 {
     public function create(?Node $parent, NodeType $type, string $name): Node
     {
-        if (! $type->canSitUnder($parent?->type)) {
-            throw new InvalidArgumentException(sprintf(
-                'Узел типа "%s" нельзя создать %s.',
-                $type->value,
-                $parent ? 'под узлом типа "'.$parent->type->value.'"' : 'в корне',
-            ));
-        }
-
         $node = DB::transaction(function () use ($parent, $type, $name) {
+            // родителя перечитываем под блокировкой: его могли перенести после загрузки модели
+            if ($parent !== null) {
+                $parent = Node::lockForUpdate()->find($parent->id)
+                    ?? throw new InvalidArgumentException('Родительский узел не найден.');
+            }
+
+            if (! $type->canSitUnder($parent?->type)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Узел типа "%s" нельзя создать %s.',
+                    $type->value,
+                    $parent ? 'под узлом типа "'.$parent->type->value.'"' : 'в корне',
+                ));
+            }
+
             $node = Node::create([
                 'parent_id' => $parent?->id,
                 'type' => $type,
