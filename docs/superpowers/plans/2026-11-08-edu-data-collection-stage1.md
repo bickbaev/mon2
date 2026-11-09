@@ -103,9 +103,11 @@ database/migrations/, tests/Feature/, tests/Unit/
 - Produces: `users(id, node_id null, login unique, name, email null (не unique), pending_email null, email_verified_at null, pd_consent_at null, password, is_admin bool, can_start_campaigns bool, can_manage_structure bool, blocked_at null, timestamps)`; методы `User::isAdmin()`, `User::canSeeNode(Node): bool` (узел в ветке пользователя, включая свой; админ — любой), `User::canManageUser(User $other): bool` (узел `other` строго ниже моего или я админ; себя через этот метод управлять нельзя), `User::isBlocked()`, `User::scopeInBranchOf(Builder, User $viewer)`.
 - `UserPolicy`: `viewAny/view/update/delete/block` через `canManageUser`; `create(User, Node $node)`. `NodePolicy::create(User, ?Node $parent)`: админ или (`can_manage_structure` и `canSeeNode($parent)`). Менять отметки прав и `is_admin` может только админ — проверяется в `UserPolicy::grantFlags`.
 
-- [ ] **Step 1: Failing tests:** `test_superior_manages_users_of_descendants`, `test_user_cannot_manage_peer_or_ancestor`, `test_admin_without_node_sees_everything`, `test_only_admin_can_grant_flags`, `test_can_manage_structure_flag_limits_creation_to_own_branch`.
-- [ ] **Step 2: Run** — FAIL. **Step 3: Implement.** **Step 4: Run** — PASS.
-- [ ] **Step 5: Commit** «Пользователи и права по ветке».
+- [x] **Step 1: Failing tests:** `test_superior_manages_users_of_descendants`, `test_user_cannot_manage_peer_or_ancestor`, `test_admin_without_node_sees_everything`, `test_only_admin_can_grant_flags`, `test_can_manage_structure_flag_limits_creation_to_own_branch`.
+- [x] **Step 2: Run** — FAIL. **Step 3: Implement.** **Step 4: Run** — PASS.
+- [x] **Step 5: Commit** «Пользователи и права по ветке».
+
+**Результат (2026-11-09):** выполнено в ветке `worktree-stage1`. Новые поля добавлены отдельной миграцией для совместимости с существующей БД; прежним пользователям назначается логин `user_<id>`. Откат запрещён при NULL или повторяющейся почте, несовместимой с исходной схемой. Поля прав и `node_id` защищены от массового присваивания. Проверка: 8 новых тестов, полный набор — 25 тестов / 134 проверки. Независимое ревью: существенных замечаний нет.
 
 ### Task 3: Вход по логину, согласие, подтверждение почты
 
