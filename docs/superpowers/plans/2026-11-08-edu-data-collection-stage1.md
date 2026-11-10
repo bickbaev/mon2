@@ -119,9 +119,11 @@ database/migrations/, tests/Feature/, tests/Unit/
 - Consumes: `User` из Task 2.
 - Produces: порядок после входа: (1) согласие на ПДн → пишет `pd_consent_at = now()`; (2) ввод почты → пишет `pending_email` (или подтверждение предзаполненной `email`) и отправляет письмо; (3) переход по подписанной ссылке ставит `email = pending_email`, `email_verified_at = now()`. Middleware `EnsureOnboardingComplete` пускает в остальную панель только если есть `pd_consent_at` и `email_verified_at`; заблокированный пользователь войти не может. Все пользователи, включая админа и перенесённых, проходят шаги 1–3.
 
-- [ ] **Step 1: Failing tests:** `test_login_uses_login_field_not_email`, `test_blocked_user_cannot_login`, `test_user_without_consent_is_redirected_to_onboarding`, `test_consent_stores_timestamp`, `test_email_must_be_confirmed_by_link_before_access`, `test_imported_user_with_old_email_still_must_confirm`, `test_expired_or_tampered_verify_link_is_rejected`.
-- [ ] **Step 2: Run** — FAIL. **Step 3: Implement.** **Step 4: Run** — PASS.
-- [ ] **Step 5: Commit** «Вход, согласие на ПДн, подтверждение почты».
+- [x] **Step 1: Failing tests:** `test_login_uses_login_field_not_email`, `test_blocked_user_cannot_login`, `test_user_without_consent_is_redirected_to_onboarding`, `test_consent_stores_timestamp`, `test_email_must_be_confirmed_by_link_before_access`, `test_imported_user_with_old_email_still_must_confirm`, `test_expired_or_tampered_verify_link_is_rejected`.
+- [x] **Step 2: Run** — FAIL. **Step 3: Implement.** **Step 4: Run** — PASS.
+- [x] **Step 5: Commit** «Вход, согласие на ПДн, подтверждение почты».
+
+**Результат (2026-11-10):** реализованы вход по логину, запрет доступа заблокированным (включая активные сессии), обязательное согласие с сохранением даты и подтверждение почты по подписанной ссылке на 60 минут. Новый адрес хранится в `pending_email`, старый сохраняется до подтверждения. Проверяются владелец ссылки, согласие, актуальность адреса, срок и подпись; повторное использование запрещено. Онбординг обязателен и для администратора, middleware действует также на Livewire-запросах. Отправка ограничена тремя запросами в минуту с одного IP. Проверено на локальном Sail PHP 8.5: PHP 8.3 не удалось собрать из-за недоступности репозиториев Ubuntu. В режиме `MAIL_MAILER=log` письмо находится в `storage/logs/laravel.log`; для реальной доставки требуется почтовый транспорт. Проверки: полный набор — 40 тестов / 222 проверки; Pint для 10 изменённых PHP-файлов — PASS. Полный Pint выявляет прежние замечания в `app/Events/NodeCreated.php`, `app/Exceptions/InvalidNodeMove.php`, `bootstrap/providers.php`. Независимое ревью: существенных замечаний нет.
 
 ### Task 4: Восстановление пароля и профиль
 
