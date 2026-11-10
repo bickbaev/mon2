@@ -3,6 +3,9 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Auth\RequestPasswordReset;
+use App\Filament\Pages\Auth\ResetPassword;
+use App\Filament\Pages\Profile;
 use App\Http\Middleware\EnsureOnboardingComplete;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -30,6 +33,8 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('cabinet')
             ->login(Login::class)
+            ->passwordReset(RequestPasswordReset::class, ResetPassword::class)
+            ->profile(Profile::class, isSimple: false)
             ->colors([
                 'primary' => Color::Amber,
             ])

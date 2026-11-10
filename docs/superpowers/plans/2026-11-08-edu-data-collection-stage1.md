@@ -135,8 +135,10 @@ database/migrations/, tests/Feature/, tests/Unit/
 **Interfaces:**
 - Produces: форма сброса принимает **логин**, письмо уходит на подтверждённую почту; если подтверждённой почты нет, ответ тот же («если пользователь существует, письмо отправлено»), но письмо не уходит. Профиль: смена пароля (с текущим паролем) и имени/почты; смена почты заново проходит подтверждение письмом, до этого работает старая.
 
-- [ ] **Step 1: Failing tests:** `test_reset_link_goes_to_verified_email_only`, `test_unknown_login_gives_same_response`, `test_reset_sets_new_password`, `test_profile_password_change_requires_current_password`, `test_changing_email_keeps_old_until_confirmed`.
-- [ ] **Step 2–4:** run FAIL → implement → PASS. **Step 5: Commit** «Сброс пароля и профиль».
+- [x] **Step 1: Failing tests:** `test_reset_link_goes_to_verified_email_only`, `test_unknown_login_gives_same_response`, `test_reset_sets_new_password`, `test_profile_password_change_requires_current_password`, `test_changing_email_keeps_old_until_confirmed`.
+- [x] **Step 2–4:** run FAIL → implement → PASS. **Step 5: Commit** «Сброс пароля и профиль».
+
+**Результат (2026-11-10):** восстановление по логину с единым ответом и защитой времени ответа; токены привязаны к ID и подтверждённой почте, общая почта не смешивает аккаунты. Письма восстановления — в зашифрованной очереди с повторной проверкой допустимости доставки. Профиль Filament меняет имя, пароль (с текущим паролем) и pending_email через подтверждение; старая почта сохраняется до подтверждения. Тесты восстановления и профиля: 28 тестов / 159 проверок.
 
 ### Task 5: Управление узлами и пользователями в панели
 

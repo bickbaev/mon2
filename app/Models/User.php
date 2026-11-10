@@ -14,6 +14,11 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements FilamentUser
 {
+    public function getEmailForPasswordReset(): ?string
+    {
+        return $this->email_verified_at ? $this->email : null;
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return ! $this->isBlocked();
