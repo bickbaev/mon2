@@ -164,8 +164,8 @@ database/migrations/, tests/Feature/, tests/Unit/
 **Interfaces:**
 - Produces: `Dictionary::activeItems(): Collection`; ресурс виден только админу; кнопки удаления записи нет, есть «Сделать неактивной»; неактивная запись не предлагается в формах, но остаётся в старых данных.
 
-- [ ] **Step 1: Failing tests:** `test_only_admin_manages_dictionaries`, `test_item_is_deactivated_not_deleted`, `test_inactive_items_excluded_from_active_items`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Справочники».
+- [x] **Step 1: Failing tests:** `test_only_admin_manages_dictionaries`, `test_item_is_deactivated_not_deleted`, `test_inactive_items_excluded_from_active_items`.
+- [x] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Справочники».
 
 ### Task 7: DSL полей и реестр видов отчётов
 
@@ -181,8 +181,8 @@ database/migrations/, tests/Feature/, tests/Unit/
   - `report_types(id, key unique, kind, title, is_base bool, is_required bool, auto_create bool, excel_enabled bool default true, list_allows_empty bool default true, active bool default true)`; `reports:sync` создаёт недостающие строки и обновляет `title`/`kind`, **не трогая** настройки, выставленные админом.
   - Правила допустимости: `is_base` только для `Simple`/`List`; сложные отчёты `excel_enabled = false` принудительно.
 
-- [ ] **Step 1: Failing tests:** `test_required_number_with_bounds_builds_rules`, `test_dictionary_field_accepts_only_active_item_ids`, `test_custom_rules_closure_is_applied`, `test_sync_creates_report_types_and_keeps_admin_settings`, `test_complex_report_cannot_be_base_or_have_excel`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «DSL полей и реестр отчётов».
+- [x] **Step 1: Failing tests:** `test_required_number_with_bounds_builds_rules`, `test_dictionary_field_accepts_only_active_item_ids`, `test_custom_rules_closure_is_applied`, `test_sync_creates_report_types_and_keeps_admin_settings`, `test_complex_report_cannot_be_base_or_have_excel`.
+- [x] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «DSL полей и реестр отчётов».
 
 ### Task 8: Отчёты, сборы (схема), статусы и политика
 
@@ -195,12 +195,14 @@ database/migrations/, tests/Feature/, tests/Unit/
   - `campaigns(id, report_type_id, creator_id, creator_node_id, title null, starts_at date, ends_at date, closes_at date, closed_at null, start_status, remind_days_before unsigned null, template_id null, timestamps)`; `Campaign::isClosed(): bool` (`closed_at` не null или `closes_at` в прошлом)
   - `reports(id, report_type_id, campaign_id null, node_id, status, timestamps)`, unique(`report_type_id`,`campaign_id`,`node_id`); у базовых `campaign_id = null`
   - `ReportStatus::label(): string` (русские подписи)
-  - `ReportStatusService::transition(Report $r, ReportStatus $to, User $actor): void` — бросает `AuthorizationException`/`DomainException`; разрешены: New→InProgress (автоматически, вызывается из `ReportStore`), InProgress→Rework|Accepted|Blocked, Rework→InProgress (авто) |Blocked, Accepted→InProgress|Rework|Blocked (только создатель сбора), Blocked→InProgress|Rework (вышестоящие); Blocked→New не допускается; `to = Rework` отправляет `ReportReturnedForRework`
-  - `ReportPolicy::view/edit(User, Report)`, `setStatus(User, Report, ReportStatus $to)` — матрица из спеки: New/InProgress/Rework — правит узел отчёта; Accepted — только создатель сбора; Blocked — только узлы выше узла отчёта, не сам узел; закрытый сбор — никому из обычных пользователей; «Доработать»/«Принят» ставит любой узел выше. У базовых отчётов «создателя сбора» нет: их правит админ и вышестоящий, поставивший статус.
+  - `ReportStatusService::transition(Report $r, ReportStatus $to, User $actor): void` — бросает `AuthorizationException`/`DomainException`; разрешены: New→InProgress (автоматически, вызывается из `ReportStore`), New→Blocked (вышестоящие), InProgress→Rework|Accepted|Blocked, Rework→InProgress (авто) |Blocked, Accepted→InProgress|Rework|Blocked (создатель сбора, а у базового отчёта — любой вышестоящий), Blocked→InProgress|Rework (вышестоящие); Blocked→New не допускается; `to = Rework` отправляет `ReportReturnedForRework`. Администратор соблюдает тот же граф переходов.
+  - `ReportPolicy::view/edit(User, Report)`, `setStatus(User, Report, ReportStatus $to)` — матрица из спеки: New/InProgress/Rework — правит узел отчёта; Accepted — только создатель сбора; Blocked — только узлы выше узла отчёта, не сам узел; закрытый сбор — никому из обычных пользователей; «Доработать»/«Принят» ставит любой узел выше. У базовых отчётов принятые данные правит и снимает статус любой вышестоящий и администратор (уточнение заказчика 2026-11-10).
 - Review Focus (1): `test_user_cannot_open_report_of_foreign_branch_by_id`.
 
-- [ ] **Step 1: Failing tests:** `test_new_to_in_progress_on_first_save_only`, `test_rework_returns_to_in_progress_after_owner_saves`, `test_accepted_report_editable_only_by_campaign_creator`, `test_blocked_report_editable_by_ancestors_not_by_owner`, `test_closed_campaign_report_denied_for_everyone_but_admin`, `test_rework_dispatches_event`, `test_user_cannot_open_report_of_foreign_branch_by_id`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Отчёты, сборы, статусы, политика».
+- [x] **Step 1: Failing tests:** `test_new_to_in_progress_on_first_save_only`, `test_rework_returns_to_in_progress_after_owner_saves`, `test_accepted_report_editable_only_by_campaign_creator`, `test_blocked_report_editable_by_ancestors_not_by_owner`, `test_closed_campaign_report_denied_for_everyone_but_admin`, `test_rework_dispatches_event`, `test_user_cannot_open_report_of_foreign_branch_by_id`.
+- [x] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Отчёты, сборы, статусы, политика».
+
+Подробный план и результаты задач 6–8: `2026-11-10-dictionaries-report-core.md`. В задаче 8 проверены переходы сервиса; фактическое сохранение данных через ReportStore остаётся задачей 9.
 
 ### Task 9: Сохранение и форма отчётов, демо-отчёты, файлы
 
