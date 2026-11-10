@@ -17,8 +17,12 @@ class UserPolicy
         return $user->canManageUser($other);
     }
 
-    public function create(User $user, Node $node): bool
+    public function create(User $user, ?Node $node = null): bool
     {
+        if ($node === null) {
+            return $this->viewAny($user);
+        }
+
         return $user->isAdmin() || ($user->node !== null && $user->node->isAncestorOf($node));
     }
 

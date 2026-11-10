@@ -150,8 +150,10 @@ database/migrations/, tests/Feature/, tests/Unit/
 - Consumes: `NodeService`, `UserPolicy`, `NodePolicy`.
 - Produces: ресурс узлов (дерево/список, создание через `NodeService::create`, видно только своей ветки, создание доступно по `NodePolicy::create`); ресурс пользователей (список только ниже своего узла, создать/править/заблокировать/удалить через политику; поля прав `is_admin`, `can_start_campaigns`, `can_manage_structure` показываются и сохраняются только админу).
 
-- [ ] **Step 1: Failing tests (Livewire):** `test_user_sees_only_own_branch_nodes`, `test_non_admin_cannot_set_flags_even_by_forged_payload`, `test_block_prevents_login`, `test_user_without_manage_structure_cannot_create_node`, `test_superior_creates_user_for_descendant_node_only`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Ресурсы узлов и пользователей».
+- [x] **Step 1: Failing tests (Livewire):** `test_user_sees_only_own_branch_nodes`, `test_non_admin_cannot_set_flags_even_by_forged_payload`, `test_block_prevents_login`, `test_user_without_manage_structure_cannot_create_node`, `test_superior_creates_user_for_descendant_node_only`.
+- [x] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Ресурсы узлов и пользователей».
+
+**Результат (2026-11-10):** стандартные ресурсы Filament 4 в `app/Filament/Resources/Nodes` и `Users`. Узлы: просмотр своей ветки, поиск, фильтры, создание через NodeService; перемещение/удаление не добавлялись. Пользователи: создание, редактирование, блокировка/разблокировка, удаление по политикам; права меняет только администратор. Сгенерированный пароль показывается создателю один раз через JS-эффект, не сохраняется в состоянии Livewire или сессии. Проверены подмена полей и действий, чужие ветки, снятие прав и блокировка активного редактора. Полный набор: 92 теста / 508 проверок; Pint изменённых файлов — PASS. Независимое ревью: существенных нерешённых замечаний нет. Рабочее окружение — PHP 8.5; Dockerfile проекта остаётся PHP 8.3. Подробности: `2026-11-10-profile-and-user-management.md`.
 
 ### Task 6: Справочники
 
