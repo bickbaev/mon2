@@ -22,7 +22,7 @@ class NodeResource extends Resource
 
     protected static ?string $modelLabel = 'узел';
 
-    protected static ?string $pluralModelLabel = 'Организации и уровни';
+    protected static ?string $pluralModelLabel = 'Организации';
 
     protected static ?string $recordTitleAttribute = 'name';
 
