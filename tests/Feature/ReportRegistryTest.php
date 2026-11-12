@@ -2,9 +2,12 @@
 
 use App\Enums\ReportKind;
 use App\Models\ReportType;
+use App\Reports\Demo\DemoList;
+use App\Reports\Demo\DemoSimple;
 use App\Reports\Field;
 use App\Reports\ReportDefinition;
 use App\Reports\ReportRegistry;
+use App\Services\ReportStore;
 use Illuminate\Validation\ValidationException;
 
 class RegistrySimpleDefinition extends ReportDefinition
@@ -103,4 +106,44 @@ test('sync changes kind safely and rolls back the whole batch on conflict', func
     $this->artisan('reports:sync')->assertSuccessful();
     expect($existing->fresh()->kind)->toBe(ReportKind::Complex);
     expect($existing->fresh()->excel_enabled)->toBeFalse();
+});
+
+class UnsafeChangedDefinition extends RegistrySimpleDefinition
+{
+    public function fields(): array
+    {
+        return [];
+    }
+}
+
+test('sync rejects removal of fields after saved data without changing metadata', function () {
+    config(['reports.definitions' => [DemoList::class]]);
+    [$report, $user] = storedDemoReport();
+    app(ReportStore::class)->save($report, ['rows' => [['title' => 'Test', 'date' => '2026-11-12', 'participants' => 1]]], $user);
+    $type = $report->reportType;
+    $definition = new class extends DemoList
+    {
+        public function fields(): array
+        {
+            return [Field::text('title', 'Название')];
+        }
+    };
+    expect(fn () => app(ReportRegistry::class)->assertSafeChange($type, $definition))->toThrow(DomainException::class);
+});
+
+test('saved file field cannot change from single to multiple uploads', function () {
+    config(['reports.definitions' => [DemoSimple::class]]);
+    [$report, $user] = storedDemoReport('demo_simple');
+    app(ReportStore::class)->save($report, simpleDemoPayload(), $user);
+    $definition = new class extends DemoSimple
+    {
+        public function fields(): array
+        {
+            $fields = parent::fields();
+            $fields[4]->isMultiple = true;
+
+            return $fields;
+        }
+    };
+    expect(fn () => app(ReportRegistry::class)->assertSafeChange($report->reportType, $definition))->toThrow(DomainException::class);
 });

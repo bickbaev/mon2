@@ -13,7 +13,7 @@ class NodeService
 {
     public function create(?Node $parent, NodeType $type, string $name): Node
     {
-        $node = DB::transaction(function () use ($parent, $type, $name) {
+        return DB::transaction(function () use ($parent, $type, $name) {
             // родителя перечитываем под блокировкой: его могли перенести после загрузки модели
             if ($parent !== null) {
                 $parent = Node::lockForUpdate()->find($parent->id)
@@ -40,13 +40,10 @@ class NodeService
             $node->path = ($parent?->path ?? '/').$node->id.'/';
             $node->save();
 
+            event(new NodeCreated($node));
+
             return $node;
         });
-
-        // событие уходит только после коммита транзакции
-        event(new NodeCreated($node));
-
-        return $node;
     }
 
     public function move(Node $node, Node $newParent): void

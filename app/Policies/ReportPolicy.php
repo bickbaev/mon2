@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Enums\ReportStatus;
 use App\Models\Report;
 use App\Models\User;
+use App\Services\BaseReportGate;
 
 class ReportPolicy
 {
@@ -27,6 +28,10 @@ class ReportPolicy
         }
         if ($user->isAdmin()) {
             return true;
+        }
+
+        if ($report->campaign_id !== null && app(BaseReportGate::class)->blocks($report->node)) {
+            return false;
         }
 
         return match ($report->status) {

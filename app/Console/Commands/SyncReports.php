@@ -19,10 +19,12 @@ class SyncReports extends Command
     {
         try {
             $definitions = $registry->all();
-            DB::transaction(function () use ($definitions): void {
+            DB::transaction(function () use ($definitions, $registry): void {
                 foreach ($definitions as $key => $definition) {
                     $type = ReportType::query()->where('key', $key)->lockForUpdate()->first() ?? new ReportType(['key' => $key]);
-                    $type->fill(['title' => $definition->title(), 'kind' => $definition->kind()])->save();
+                    $registry->assertSafeChange($type, $definition);
+                    $type->fill(['title' => $definition->title(), 'kind' => $definition->kind()]);
+                    $type->forceFill(['definition_snapshot' => json_encode($registry->snapshot($definition), JSON_THROW_ON_ERROR)])->save();
                 }
             });
         } catch (DomainException|InvalidArgumentException $exception) {

@@ -219,8 +219,11 @@ database/migrations/, tests/Feature/, tests/Unit/
   - Демо: `DemoSimple` (число, текст, радио со справочником, дата, файл), `DemoList` («Мероприятия»: название, дата, число участников).
   - Изменение описания, по которому есть данные: `ReportRegistry::assertSafeChange` — запрещает удалять поля и делать существующие обязательными (отдельный тест).
 
-- [ ] **Step 1: Failing tests:** `test_save_rejects_empty_required_and_stores_nothing`, `test_first_save_moves_new_to_in_progress`, `test_list_report_replaces_rows`, `test_empty_list_allowed_only_with_flag`, `test_dictionary_value_stored_as_item_id`, `test_file_rejected_when_too_big_or_wrong_mime`, `test_file_download_denied_outside_branch`, `test_unsafe_definition_change_is_rejected`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Сохранение отчётов, формы, файлы, демо».
+- [x] **Step 1: Failing tests:** `test_save_rejects_empty_required_and_stores_nothing`, `test_first_save_moves_new_to_in_progress`, `test_list_report_replaces_rows`, `test_empty_list_allowed_only_with_flag`, `test_dictionary_value_stored_as_item_id`, `test_file_rejected_when_too_big_or_wrong_mime`, `test_file_download_denied_outside_branch`, `test_unsafe_definition_change_is_rejected`.
+- [x] **Step 2–4:** FAIL → implement → PASS.
+- [x] **Step 5: Commit** — общий коммит реализации задач 9–11.
+
+**Результат (2026-11-12):** реализованы ReportStore, форма Filament по DSL, простой и списочный демо-отчёты, приватные файлы и проверка безопасного изменения определений. Проверяется пользовательский validate; сохранение вложений поддерживает удаление и перестановку строк. Команда `reports:demo` подготавливает отдельную демонстрационную организацию и отчёты, не перезаписывая заполненные данные. Изменения выполнены в `feature/report-forms-and-base-reports`.
 
 ### Task 10: Точка расширения для сложных отчётов
 
@@ -231,8 +234,11 @@ database/migrations/, tests/Feature/, tests/Unit/
 **Interfaces:**
 - Produces: `abstract class ComplexReportDefinition extends ReportDefinition` с `kind() = Complex`, `abstract routes(): void` (регистрирует маршруты своего контроллера под префиксом `/cabinet/complex/{key}`), `fields()` возвращает `[]`. Такой отчёт получает сборы, статусы, политику и статистику статусов как остальные; свой контроллер обязан использовать `ReportPolicy` и `ReportStatusService`. Excel для него не формируется.
 
-- [ ] **Step 1: Failing tests:** `test_complex_report_route_is_registered`, `test_complex_report_respects_report_policy`, `test_complex_report_appears_in_campaign_stats`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Сложные отчёты».
+- [x] **Step 1: Failing tests:** `test_complex_report_route_is_registered`, `test_complex_report_respects_report_policy`, `test_complex_report_appears_in_campaign_stats`.
+- [x] **Step 2–4:** FAIL → implement → PASS.
+- [x] **Step 5: Commit** — общий коммит реализации задач 9–11.
+
+**Результат (2026-11-12):** ComplexReportDefinition предоставляет регистрацию маршрутов и URL. По согласованию с заказчиком демонстрационный сложный отчёт объединяет мероприятия (название, дата, число участников) и обязательные ФИО, должность, телефон, e-mail заполнившего. Одна кнопка сохраняет оба блока атомарно; пустой список допустим. Общие статусы и права применяются, автоматическая выгрузка в Excel отключена. Статистика проверена через связь сбора с отчётами; её экран остаётся задачей 15.
 
 ### Task 11: Базовые отчёты
 
@@ -247,8 +253,11 @@ database/migrations/, tests/Feature/, tests/Unit/
   - при `NodeCreated` у организации создаются все базовые отчёты с `auto_create`; при включении `auto_create`/назначении админом — создаются у всех существующих организаций (идемпотентно: unique-ключ).
   - Страница `BaseReports` для вышестоящих: организации ветки × базовые отчёты, статус, фильтр по статусу, проставление «Доработать»/«Принят».
 
-- [ ] **Step 1: Failing tests:** `test_auto_base_report_created_for_new_organization_only`, `test_enabling_auto_create_backfills_existing_organizations_idempotently`, `test_unsaved_required_base_report_blocks_campaign_reports_of_organization`, `test_branch_and_authority_never_blocked`, `test_rework_base_report_does_not_block`, `test_base_report_assignment_by_admin_when_auto_off`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Базовые отчёты».
+- [x] **Step 1: Failing tests:** `test_auto_base_report_created_for_new_organization_only`, `test_enabling_auto_create_backfills_existing_organizations_idempotently`, `test_unsaved_required_base_report_blocks_campaign_reports_of_organization`, `test_branch_and_authority_never_blocked`, `test_rework_base_report_does_not_block`, `test_base_report_assignment_by_admin_when_auto_off`.
+- [x] **Step 2–4:** FAIL → implement → PASS.
+- [x] **Step 5: Commit** — общий коммит реализации задач 9–11.
+
+**Результат (2026-11-12):** добавлены BaseReportGate, автоматическое и ручное назначение, настройки зарегистрированных видов и страница «Базовые отчёты» с ограничением по ветке, фильтром статуса, открытием формы и проверкой вышестоящими. Создание организации и назначение отчётов атомарны; изменение настроек и заполнение существующих организаций также откатываются вместе при ошибке. Администратор сохраняет установленное исключение из ограничений доступа. Задачи 9–11 прошли независимое ревью, замечания исправлены с RED→GREEN. Полный набор: 359 тестов / 1569 проверок — PASS; Pint и git diff --check — PASS. Миграции применены, три демонстрационных отчёта подготовлены в локальной БД.
 
 ### Task 12: Запуск и управление сбором
 
