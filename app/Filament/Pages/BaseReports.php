@@ -22,7 +22,7 @@ class BaseReports extends Page implements HasTable
 {
     use InteractsWithTable;
 
-    protected static ?string $title = 'Базовые отчёты';
+    protected static ?string $title = 'Назначенные отчёты';
 
     protected string $view = 'filament.pages.base-reports';
 
@@ -36,7 +36,7 @@ class BaseReports extends Page implements HasTable
 
     public function table(Table $table): Table
     {
-        return $table->query(function (): Builder {
+        return $table->heading('Базовые отчёты')->queryStringIdentifier('base')->query(function (): Builder {
             $actor = self::currentActor();
             $query = Report::query()->whereNull('campaign_id')->with(['node', 'reportType']);
 
@@ -47,14 +47,20 @@ class BaseReports extends Page implements HasTable
             TextColumn::make('status')->label('Статус')->formatStateUsing(fn (ReportStatus $state): string => $state->label())->badge(),
         ])->defaultSort('id')->filters([
             SelectFilter::make('status')->label('Статус')->options(collect(ReportStatus::cases())->mapWithKeys(fn (ReportStatus $status): array => [$status->value => $status->label()])->all()),
-        ])->recordActions([
-            Action::make('open')->label('Открыть')->url(fn (Report $record): string => ReportForm::getUrl(['report' => $record->id])),
-            $this->statusAction('rework', ReportStatus::Rework),
-            $this->statusAction('accept', ReportStatus::Accepted),
-        ]);
+        ])->recordActions(self::reportActions());
     }
 
-    private function statusAction(string $name, ReportStatus $status): Action
+    /** @return array<Action> */
+    public static function reportActions(): array
+    {
+        return [
+            Action::make('open')->label('Открыть')->url(fn (Report $record): string => ReportForm::getUrl(['report' => $record->id])),
+            self::statusAction('rework', ReportStatus::Rework),
+            self::statusAction('accept', ReportStatus::Accepted),
+        ];
+    }
+
+    private static function statusAction(string $name, ReportStatus $status): Action
     {
         return Action::make($name)->label($status->label())->requiresConfirmation()
             ->visible(function (Report $record) use ($status): bool {
