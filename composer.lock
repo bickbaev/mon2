@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2439b69525dc6dfc720dd3322815afd5",
+    "content-hash": "6b787ce65f6ed93488ac66daf7ac77b8",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2318,6 +2318,70 @@
                 }
             ],
             "time": "2026-08-24T09:15:32+00:00"
+        },
+        {
+            "name": "kalnoy/nestedset",
+            "version": "v6.0.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lazychaser/laravel-nestedset.git",
+                "reference": "3cfc56a9759fb592bc903056166bfc0867f9e679"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lazychaser/laravel-nestedset/zipball/3cfc56a9759fb592bc903056166bfc0867f9e679",
+                "reference": "3cfc56a9759fb592bc903056166bfc0867f9e679",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "^7.0|^8.0|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/events": "^7.0|^8.0|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/support": "^7.0|^8.0|^9.0|^10.0|^11.0|^12.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "7.*|8.*|9.*|^10.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Kalnoy\\Nestedset\\NestedSetServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-master": "v5.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kalnoy\\Nestedset\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alexander Kalnoy",
+                    "email": "lazychaser@gmail.com"
+                }
+            ],
+            "description": "Nested Set Model for Laravel 5.7 and up",
+            "keywords": [
+                "database",
+                "hierarchy",
+                "laravel",
+                "nested sets",
+                "nsm"
+            ],
+            "support": {
+                "issues": "https://github.com/lazychaser/laravel-nestedset/issues",
+                "source": "https://github.com/lazychaser/laravel-nestedset/tree/v6.0.6"
+            },
+            "time": "2025-04-22T19:38:02+00:00",
+            "published-time": "2025-05-26T16:05:31+00:00"
         },
         {
             "name": "kirschbaum-development/eloquent-power-joins",
@@ -5844,6 +5908,83 @@
                 }
             ],
             "time": "2022-12-17T21:53:22+00:00"
+        },
+        {
+            "name": "solution-forest/filament-nestable-tree",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/solutionforest/filament-nestable-tree.git",
+                "reference": "82b922f90c33a311350cd933db1bbf27fe879137"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/solutionforest/filament-nestable-tree/zipball/82b922f90c33a311350cd933db1bbf27fe879137",
+                "reference": "82b922f90c33a311350cd933db1bbf27fe879137",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0|^5.0",
+                "kalnoy/nestedset": "^6.0|^7.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.15.0"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/boost": "^2.4",
+                "laravel/pint": "^1.0",
+                "nunomaduro/collision": "^8.0",
+                "orchestra/testbench": "^9.0|^10.0",
+                "pestphp/pest": "^3.7|^4.0",
+                "pestphp/pest-plugin-arch": "^3.0|^4.0",
+                "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+                "pestphp/pest-plugin-livewire": "^3.0|^4.0",
+                "rector/rector": "^2.0",
+                "spatie/laravel-ray": "^1.26"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "SolutionForest\\FilamentNestableTree\\FilamentNestableTreeServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "SolutionForest\\FilamentNestableTree\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "carly",
+                    "email": "carly.cheung@solutionforest.net",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A nestable drag-and-drop tree component for Filament v4 and v5. Supports Eloquent models (including kalnoy/nestedset), static record arrays, per-node actions, multi-tree pages, cross-tree drag-and-drop, lazy loading, and async child loading.",
+            "homepage": "https://github.com/solutionforest/filament-nestable-tree",
+            "keywords": [
+                "filament",
+                "filament-nestable-tree",
+                "filament-nestedset",
+                "filament-plugin",
+                "filament-tree",
+                "filamentphp",
+                "laravel",
+                "nestedset",
+                "solutionforest"
+            ],
+            "support": {
+                "issues": "https://github.com/solutionforest/filament-nestable-tree/issues",
+                "source": "https://github.com/solutionforest/filament-nestable-tree"
+            },
+            "time": "2026-05-27T10:13:42+00:00",
+            "published-time": "2026-05-27T10:15:03+00:00"
         },
         {
             "name": "spatie/invade",
@@ -12638,12 +12779,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.11.0"
 }

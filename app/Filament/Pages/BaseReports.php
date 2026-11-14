@@ -7,9 +7,11 @@ use App\Enums\ReportStatus;
 use App\Models\Report;
 use App\Models\User;
 use App\Services\ReportStatusService;
+use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -23,6 +25,8 @@ class BaseReports extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $title = 'Назначенные отчёты';
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInboxArrowDown;
 
     protected string $view = 'filament.pages.base-reports';
 

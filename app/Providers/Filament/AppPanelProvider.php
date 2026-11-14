@@ -5,13 +5,13 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Pages\Auth\ResetPassword;
+use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Profile;
 use App\Http\Middleware\EnsureOnboardingComplete;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -32,6 +32,7 @@ class AppPanelProvider extends PanelProvider
             ->default()
             ->id('app')
             ->path('cabinet')
+            ->globalSearch(false)
             ->login(Login::class)
             ->passwordReset(RequestPasswordReset::class, ResetPassword::class)
             ->profile(Profile::class, isSimple: false)

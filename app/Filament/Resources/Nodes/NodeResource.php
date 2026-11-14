@@ -6,10 +6,12 @@ use App\Enums\NodeType;
 use App\Filament\Resources\Nodes\Pages\CreateNode;
 use App\Filament\Resources\Nodes\Pages\ListNodes;
 use App\Models\Node;
+use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -24,7 +26,17 @@ class NodeResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Организации';
 
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
+
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user()?->fresh();
+
+        return parent::shouldRegisterNavigation() && $user !== null
+            && ($user->isAdmin() || ($user->node?->children()->exists() ?? false));
+    }
 
     public static function typeOptions(): array
     {

@@ -17,9 +17,11 @@
 /node_modules
 /public/build
 /public/css/filament
+/public/css/solutionforest
 /public/fonts/filament
 /public/hot
 /public/js/filament
+/public/js/solutionforest
 /public/storage
 /storage/*.key
 /storage/pail

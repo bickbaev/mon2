@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\Onboarding;
 use App\Models\User;
 use App\Notifications\VerifyEmailNotification;
@@ -8,6 +9,7 @@ use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
+use Livewire\Mechanisms\ComponentRegistry;
 
 beforeEach(function () {
     Filament::setCurrentPanel(Filament::getPanel('app'));
@@ -156,7 +158,7 @@ test('dashboard livewire updates require completed onboarding', function (string
     $response = $this->actingAs($user)->get('/cabinet')->assertOk();
     preg_match_all('/wire:snapshot="([^"]+)"/', $response->getContent(), $matches);
     $snapshot = collect($matches[1])->map(fn ($value) => html_entity_decode($value, ENT_QUOTES))
-        ->first(fn ($value) => json_decode($value, true)['memo']['name'] === 'filament.pages.dashboard');
+        ->first(fn ($value) => json_decode($value, true)['memo']['name'] === app(ComponentRegistry::class)->getName(Dashboard::class));
     expect($snapshot)->not->toBeNull();
     $user->forceFill([$field => null])->save();
     $this->postJson('/livewire/update', ['components' => [[

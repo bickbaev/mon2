@@ -38,7 +38,7 @@ class ReportTypeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentDuplicate;
 
     public static function getEloquentQuery(): Builder
     {
