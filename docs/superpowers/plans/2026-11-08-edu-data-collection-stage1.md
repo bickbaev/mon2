@@ -262,8 +262,8 @@ database/migrations/, tests/Feature/, tests/Unit/
 ### Task 12: Запуск и управление сбором
 
 **Files:**
-- Create: `app/Services/NodeSelector.php`, `app/Services/CampaignService.php`, `app/Policies/CampaignPolicy.php`, `app/Filament/Resources/CampaignResource.php`
-- Test: `tests/Feature/CampaignServiceTest.php`
+- Create: `app/Services/NodeSelection.php`, `app/Services/NodeSelector.php`, `app/Services/CampaignService.php`, `app/Policies/CampaignPolicy.php`, `app/Filament/Resources/Campaigns/`
+- Test: `tests/Feature/CampaignServiceTest.php`, `tests/Feature/CampaignResourcesTest.php`
 
 **Interfaces:**
 - Consumes: `Report`, `Campaign`, `NodeType`, `ReportRegistry`.
@@ -274,14 +274,17 @@ database/migrations/, tests/Feature/, tests/Unit/
   - `addNode(User, Campaign, Node): Report` (не создаёт дубль), `blockAll(User, Campaign): int` (все отчёты → Blocked), `close(User, Campaign): void` (ставит `closed_at`)
   - `CampaignPolicy::manage(User, Campaign)` — создатель и все узлы выше узла создателя; админ
 
-- [ ] **Step 1: Failing tests:** `test_four_selection_methods_resolve_expected_nodes`, `test_selection_excludes_own_node_and_foreign_branches`, `test_start_with_empty_selection_fails_and_creates_nothing`, `test_start_requires_flag`, `test_dates_must_be_ordered`, `test_set_of_nodes_is_frozen_after_start`, `test_add_node_manually_creates_one_report`, `test_block_all_sets_every_report_blocked`, `test_superior_can_manage_subordinate_campaign`, `test_start_status_applies_to_all_reports`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Запуск и управление сбором».
+- [x] **Step 1: Failing tests:** четыре способа выбора, исключение своего узла и чужих веток, пустой состав, актуальные права, порядок дат, фиксированный состав, ручное добавление без дублей, массовая блокировка, управление вышестоящим, все стартовые статусы, откат частичного назначения, формы Filament.
+- [x] **Step 2–4:** FAIL → implement → PASS.
+- [x] **Step 5: Commit** — общий коммит задач 12–13.
+
+**Результат (2026-11-15):** добавлены сервис запуска и управления сбором, политика и раздел «Сборы». Ошибки выбора показываются у полей формы; состав фиксируется при запуске. Закрытый сбор нельзя изменять, включая отчёты и их статусы, даже администратору. Отправка уведомлений остаётся задачей 14.
 
 ### Task 13: Шаблоны сборов и планировщик
 
 **Files:**
 - Create: миграции `campaign_templates(...)`, `campaign_template_nodes(template_id, node_id)`; `app/Models/CampaignTemplate.php`, `app/Enums/Periodicity.php`, `app/Services/ScheduleCalculator.php`; команды `SpawnCampaigns`, `CloseDueCampaigns`; `CampaignTemplateResource`; расписание в `routes/console.php`
-- Test: `tests/Unit/ScheduleCalculatorTest.php`, `tests/Feature/SpawnCampaignsTest.php`
+- Test: `tests/Feature/ScheduleCalculatorTest.php`, `tests/Feature/SpawnCampaignsTest.php`, `tests/Feature/CampaignResourcesTest.php`
 
 **Interfaces:**
 - Consumes: `CampaignService`.
@@ -291,8 +294,11 @@ database/migrations/, tests/Feature/, tests/Unit/
   - `campaigns:spawn` (ежедневно): для каждого активного шаблона, у которого старт наступил, создаёт сбор через `CampaignService::startFromTemplate(CampaignTemplate): ?Campaign`; идемпотентность по `last_spawned_for`; набор узлов — `campaign_template_nodes` (фиксируется при создании шаблона; добавление узла вручную); `closes_at = ends_at + close_after_days`, а если `close_after_days` null — `closes_at` не задан и сбор закрывают вручную (в миграции `campaigns.closes_at` делает nullable)
   - `campaigns:close-due` (ежедневно): проставляет `closed_at` сборам с `closes_at <= today`
 
-- [ ] **Step 1: Failing tests:** `test_weekly_next_start`, `test_monthly_day_31_falls_back_to_last_day_of_month`, `test_yearly_feb_29_in_non_leap_year`, `test_spawn_twice_same_day_creates_one_campaign`, `test_spawn_uses_frozen_template_nodes_and_skips_if_all_nodes_removed`, `test_node_added_to_template_joins_only_later_campaigns`, `test_close_due_closes_only_past_closes_at`, `test_no_close_after_days_means_manual_close`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Шаблоны сборов и планировщик».
+- [x] **Step 1: Failing tests:** недельное, месячное и годовое расписание, последние дни месяца и 29 февраля, повторный запуск, пропущенные даты, фиксированный состав, добавление в будущие сборы, удалённые и перенесённые узлы, актуальные права создателя, откат и повтор после ошибки, автоматическое и ручное закрытие.
+- [x] **Step 2–4:** FAIL → implement → PASS.
+- [x] **Step 5: Commit** — общий коммит задач 12–13.
+
+**Результат (2026-11-15):** добавлены шаблоны, их настройки и участники, раздел «Шаблоны сборов», команды `campaigns:spawn` и `campaigns:close-due`, ежедневное расписание. По согласованию с заказчиком пропущенные запуски не восстанавливаются; сбор создаётся только в назначенный день. Дата окончания равна дате начала плюс длительность в днях. При запуске перепроверяются права создателя и принадлежность участников его текущей ветке; недоступные участники пропускаются, пустой сбор не создаётся. Повторный запуск защищён блокировкой шаблона и уникальным ключом `(template_id, starts_at)`. Поле `campaigns.closes_at` уже было nullable, дополнительное изменение не потребовалось. Независимое ревью: два замечания исправлены с RED→GREEN. Полный набор — 463 теста / 1960 проверок, Pint и `git diff --check` — PASS.
 
 ### Task 14: Уведомления
 

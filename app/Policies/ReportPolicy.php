@@ -23,7 +23,7 @@ class ReportPolicy
 
     public function edit(User $user, Report $report): bool
     {
-        if (! $this->view($user, $report)) {
+        if (($report->campaign?->isClosed() ?? false) || ! $this->view($user, $report)) {
             return false;
         }
         if ($user->isAdmin()) {
@@ -48,7 +48,7 @@ class ReportPolicy
 
     public function setStatus(User $user, Report $report, ReportStatus $to): bool
     {
-        if (! $report->status->canTransitionTo($to) || ! $this->view($user, $report)) {
+        if (($report->campaign?->isClosed() ?? false) || ! $report->status->canTransitionTo($to) || ! $this->view($user, $report)) {
             return false;
         }
         if ($user->isAdmin()) {

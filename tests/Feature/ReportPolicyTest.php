@@ -70,9 +70,9 @@ test('closed campaign forbids normal view edit and status changes', function (st
     [$report, $actor] = reportPolicyFixture(false, $role, ReportStatus::InProgress);
     $report->campaign->update(['closed_at' => now()]);
     foreach (['view', 'edit', 'update'] as $ability) {
-        expect(Gate::forUser($actor)->allows($ability, $report))->toBe($role === 'admin');
+        expect(Gate::forUser($actor)->allows($ability, $report))->toBe($ability === 'view' && $role === 'admin');
     }
-    expect(Gate::forUser($actor)->allows('setStatus', [$report, ReportStatus::Rework]))->toBe($role === 'admin');
+    expect(Gate::forUser($actor)->allows('setStatus', [$report, ReportStatus::Rework]))->toBeFalse();
 })->with(['owner', 'creator', 'higher', 'admin', 'blocked_admin']);
 
 test('foreign report cannot be resolved through authorized branch query by id', function () {
