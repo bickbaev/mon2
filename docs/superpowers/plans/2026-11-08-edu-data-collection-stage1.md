@@ -313,8 +313,11 @@ database/migrations/, tests/Feature/, tests/Unit/
   - все уведомления `ShouldQueue`, каналы берутся из `config('report-notifications.channels')` (по умолчанию `['mail']`) — так добавляется новый канал
   - `NewReportNotification` — при запуске сбора и при `addNode`; `ReportReturnedNotification` — при переводе в Rework; `DeadlineReminderNotification` — команда `campaigns:remind` (ежедневно): в день `ends_at - remind_days_before` шлёт только узлам, чей отчёт сейчас в статусе New; одно напоминание на отчёт. Уведомления о приёмке нет.
 
-- [ ] **Step 1: Failing tests:** `test_all_verified_users_of_node_get_new_report_mail`, `test_unverified_and_blocked_users_get_nothing`, `test_node_without_verified_users_does_not_fail_start`, `test_rework_notifies_owner_node`, `test_reminder_only_for_new_status`, `test_reminder_sent_once_per_report`, `test_no_mail_on_accept`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Уведомления».
+- [x] **Step 1: Failing tests:** получатели по узлу и подтверждённой почте, запуск вручную и по шаблону, добавление без повторных писем, возврат базового отчёта и отчёта сбора, точный день напоминания, отсутствие писем о приёмке, откат, устаревшие задания, ошибка постановки в очередь и безопасный повтор.
+- [x] **Step 2–4:** FAIL → implement → PASS.
+- [x] **Step 5: Commit** — общий коммит задач 14–15.
+
+**Результат (2026-11-15):** добавлены три уведомления, событие назначения отчёта, слушатели и команда `campaigns:remind` в ежедневном расписании. Каналы задаются в `config/report-notifications.php`. Назначение и возврат отправляются после коммита; обработчик повторно проверяет актуальность отчёта и получателя. По согласованию с заказчиком пропущенные дни напоминаний не восстанавливаются. Отметка `reports.deadline_reminded_at` и задания напоминаний записываются атомарно в БД через соединение очереди `report-notifications`, использующее текущую БД и ту же таблицу/очередь, что стандартное database-соединение. До коммита задания недоступны обработчику; ошибка записи откатывает все задания и отметку. Независимое ревью выявило риск потери напоминания при ошибке очереди; исправлен с RED→GREEN. Проверки уведомлений — 26 тестов.
 
 ### Task 15: Экраны статистики
 
@@ -326,11 +329,14 @@ database/migrations/, tests/Feature/, tests/Unit/
 - Consumes: `Node::scopeInBranch`, `Report`.
 - Produces:
   - `StatusStats::forNode(Campaign $c, Node $node): array{rows: list<array{node: Node, counts: array<string,int>}>, total: array<string,int>}` — `rows` — непосредственные подчинённые `$node`, `counts` содержит ключи значений `ReportStatus` и `total`, считает по всей ветке подчинённого; `total` — итог по `$node`; подчинённые без отчётов показываются с нулями
-  - `StatusStats::overview(User $viewer): list<array{campaign: Campaign, counts: array}>` — открытые сборы, видимые пользователю (свои и нижестоящих), счётчики по ветке пользователя
+  - `StatusStats::overview(User $viewer): list<array{campaign: Campaign, counts: array}>` — открытые сборы своего и нижестоящих узлов, а также сборы вышестоящих с отчётами в ветке пользователя; все счётчики ограничены веткой пользователя
   - Страницы: `CampaignsOverview` (одна строка на сбор → ссылка на `CampaignStats`), `CampaignStats` (таблица со ссылкой «Просмотр» на подчинённый узел; число в колонке ведёт на `CampaignReportsList` со статусом), доступны узлам с подчинёнными; для узла без подчинённых и для чужой ветки — 403.
 
-- [ ] **Step 1: Failing tests:** `test_counts_are_summed_over_whole_branch_of_each_child`, `test_children_without_reports_show_zeros`, `test_overview_hides_closed_campaigns`, `test_leaf_node_has_no_stats_screen`, `test_foreign_branch_stats_forbidden`, `test_status_link_lists_reports_with_that_status`.
-- [ ] **Step 2–4:** FAIL → implement → PASS. **Step 5: Commit** «Экраны статистики».
+- [x] **Step 1: Failing tests:** подсчёт всей ветки и собственного отчёта выбранного узла, нулевые строки, видимость сборов вышестоящих, изоляция чужих веток, запрет листовым и заблокированным пользователям, закрытие и перенос после открытия страницы, фильтрация по статусу, пустое название, неверные параметры и отсутствие N+1 при добавлении подчинённых.
+- [x] **Step 2–4:** FAIL → implement → PASS.
+- [x] **Step 5: Commit** — общий коммит задач 14–15.
+
+**Результат (2026-11-15):** добавлены раздел «Статистика сборов», таблица подчинённых с итоговой строкой и список отчётов со ссылками на существующую форму. По согласованию с заказчиком включены сборы вышестоящих, в которых участвует ветка пользователя. Подсчёт ведётся по текущему дереву и статусам без сохранённых счётчиков; администратор начинает с корня. Агрегаты подчинённых и сборов вычисляются пакетно. Контекст перепроверяется при каждом Livewire-запросе; закрытые сборы не показываются. Проверки статистики — 10 тестов. Полный набор — 499 тестов / 2060 проверок; Pint и `git diff --check` — PASS.
 
 ### Task 16: Архив закрытых сборов
 

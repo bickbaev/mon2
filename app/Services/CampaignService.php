@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ReportStatus;
+use App\Events\ReportAssigned;
 use App\Models\Campaign;
 use App\Models\CampaignTemplate;
 use App\Models\Node;
@@ -87,7 +88,8 @@ class CampaignService
     {
         $campaign = Campaign::query()->create(array_merge($data, ['creator_id' => $actor->id, 'creator_node_id' => $actor->node_id]));
         foreach ($nodes as $node) {
-            $campaign->reports()->create(['report_type_id' => $campaign->report_type_id, 'node_id' => $node->id, 'status' => $campaign->start_status]);
+            $report = $campaign->reports()->create(['report_type_id' => $campaign->report_type_id, 'node_id' => $node->id, 'status' => $campaign->start_status]);
+            ReportAssigned::dispatch($report);
         }
 
         return $campaign;
@@ -101,7 +103,12 @@ class CampaignService
             $this->selector->resolve($owner, new NodeSelection([$node->id]));
             $this->selector->resolve($actor, new NodeSelection([$node->id]));
 
-            return $campaign->reports()->firstOrCreate(['node_id' => $node->id], ['report_type_id' => $campaign->report_type_id, 'status' => $campaign->start_status]);
+            $report = $campaign->reports()->firstOrCreate(['node_id' => $node->id], ['report_type_id' => $campaign->report_type_id, 'status' => $campaign->start_status]);
+            if ($report->wasRecentlyCreated) {
+                ReportAssigned::dispatch($report);
+            }
+
+            return $report;
         }, 3);
     }
 

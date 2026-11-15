@@ -21,7 +21,7 @@ class Report extends Model
 
     protected function casts(): array
     {
-        return ['status' => ReportStatus::class];
+        return ['status' => ReportStatus::class, 'deadline_reminded_at' => 'immutable_datetime'];
     }
 
     protected static function booted(): void
