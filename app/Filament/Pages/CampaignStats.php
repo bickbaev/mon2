@@ -31,6 +31,9 @@ class CampaignStats extends Page implements HasTable
     #[Locked]
     public int $nodeId;
 
+    #[Locked]
+    public ?int $node = null;
+
     private ?Campaign $authorizedCampaign = null;
 
     private ?Node $authorizedNode = null;
@@ -42,10 +45,10 @@ class CampaignStats extends Page implements HasTable
         return app(StatisticsAccess::class)->allowed();
     }
 
-    public function mount(int $campaign, ?int $node = null): void
+    public function mount(int $campaign): void
     {
         $this->campaignId = $campaign;
-        $this->nodeId = app(StatisticsAccess::class)->authorizeNode($node)->id;
+        $this->nodeId = app(StatisticsAccess::class)->authorizeNode($this->node)->id;
         $this->authorizeContext();
     }
 

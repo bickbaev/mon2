@@ -19,10 +19,10 @@ class CampaignReportsList extends CampaignStats
     #[Locked]
     public ?string $status = null;
 
-    public function mount(int $campaign, ?int $node = null, ?string $status = null): void
+    public function mount(int $campaign): void
     {
-        parent::mount($campaign, $node);
-        $status ??= request()->query('status');
+        parent::mount($campaign);
+        $status = request()->query('status', $this->status);
         abort_unless($status === null || is_string($status), 404);
         $this->status = $status;
         abort_if($this->status !== null && ReportStatus::tryFrom($this->status) === null, 404);

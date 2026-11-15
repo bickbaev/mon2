@@ -162,3 +162,24 @@ test('statistics aggregate child branches without a query for each child', funct
     expect($result['total']['total'])->toBe(6);
     expect($expandedQueries)->toBe($initialQueries);
 });
+
+test('campaign title link opens statistics without an explicit node route parameter', function () {
+    [$actor, $campaign, , , $school] = statisticsContext();
+    Report::factory()->create(['campaign_id' => $campaign->id, 'node_id' => $school->id]);
+    $this->actingAs($actor);
+    $url = CampaignStats::getUrl(['campaign' => $campaign->id]);
+
+    Livewire::test(CampaignsOverview::class)->assertSee($url);
+    $this->get($url)->assertOk()->assertSee($school->name);
+});
+
+test('status count links open report lists through HTTP with and without a status filter', function () {
+    [$actor, $campaign, , $branch, $school] = statisticsContext();
+    Report::factory()->create(['campaign_id' => $campaign->id, 'node_id' => $school->id]);
+    $this->actingAs($actor);
+
+    foreach ([null, 'new'] as $status) {
+        $this->get(CampaignReportsList::getUrl(['campaign' => $campaign->id, 'node' => $branch->id, 'status' => $status]))
+            ->assertOk()->assertSee($school->name);
+    }
+});
