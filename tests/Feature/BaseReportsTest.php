@@ -129,12 +129,12 @@ test('campaign type with existing campaigns cannot become base', function () {
     expect($campaign->reportType->fresh()->is_base)->toBeFalse();
 });
 
-test('base report table is branch scoped and supports status filtering and superior review', function () {
+test('base report table is node scoped and supports status filtering and administrator review', function () {
     [, $district, $organization, , $foreign] = baseReportNodes();
     $type = ReportType::factory()->base()->create();
     $local = Report::factory()->create(['report_type_id' => $type->id, 'campaign_id' => null, 'node_id' => $organization->id, 'status' => ReportStatus::InProgress]);
     $other = Report::factory()->create(['report_type_id' => $type->id, 'campaign_id' => null, 'node_id' => $foreign->id]);
-    $actor = User::factory()->create(['node_id' => $district->id, 'pd_consent_at' => now()]);
+    $actor = User::factory()->create(['is_admin' => true, 'node_id' => $organization->id, 'pd_consent_at' => now()]);
     $this->actingAs($actor);
     Livewire::test(BaseReports::class)->assertCanSeeTableRecords([$local])->assertCanNotSeeTableRecords([$other])
         ->filterTable('status', ReportStatus::New->value)->assertCanNotSeeTableRecords([$local])
@@ -150,7 +150,7 @@ test('base report table scope rechecks stale user branch and blocked status', fu
     [, $district, $organization] = baseReportNodes();
     $type = ReportType::factory()->base()->create();
     $report = Report::factory()->create(['report_type_id' => $type->id, 'campaign_id' => null, 'node_id' => $organization->id]);
-    $actor = User::factory()->create(['node_id' => $district->id, 'pd_consent_at' => now()]);
+    $actor = User::factory()->create(['node_id' => $organization->id, 'pd_consent_at' => now()]);
     $this->actingAs($actor);
     $page = Livewire::test(BaseReports::class)->assertCanSeeTableRecords([$report]);
     User::query()->whereKey($actor)->update(['node_id' => null]);

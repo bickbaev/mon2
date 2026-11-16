@@ -39,7 +39,7 @@ class CampaignReports extends TableWidget
                         ->where(fn (Builder $dates): Builder => $dates
                             ->whereNull('closes_at')->orWhereDate('closes_at', '>', today())));
 
-                return $actor === null ? $query->whereRaw('1 = 0') : $query->inBranchOf($actor);
+                return $actor?->node_id === null ? $query->whereRaw('1 = 0') : $query->where('node_id', $actor->node_id);
             })
             ->columns([
                 TextColumn::make('reportType.title')->label('Отчёт')->wrap(),

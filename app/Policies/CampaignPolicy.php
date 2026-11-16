@@ -9,7 +9,7 @@ class CampaignPolicy
 {
     public function viewAny(User $user): bool
     {
-        return ! $user->isBlocked() && ($user->isAdmin() || $user->node_id !== null);
+        return $this->create($user);
     }
 
     public function create(User $user): bool

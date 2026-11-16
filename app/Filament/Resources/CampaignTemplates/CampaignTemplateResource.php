@@ -35,6 +35,8 @@ class CampaignTemplateResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Шаблоны сборов';
 
+    protected static bool $hasTitleCaseModelLabel = false;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
     public static function getEloquentQuery(): Builder

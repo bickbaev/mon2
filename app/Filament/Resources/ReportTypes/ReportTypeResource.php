@@ -34,7 +34,9 @@ class ReportTypeResource extends Resource
 
     protected static ?string $modelLabel = 'вид отчёта';
 
-    protected static ?string $pluralModelLabel = 'Виды отчётов';
+    protected static ?string $pluralModelLabel = 'Виды отчетов';
+
+    protected static bool $hasTitleCaseModelLabel = false;
 
     protected static ?string $recordTitleAttribute = 'title';
 
@@ -65,8 +67,8 @@ class ReportTypeResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('title')->label('Название')->searchable(),
-            TextColumn::make('key')->label('Ключ'),
+            TextColumn::make('title')->label('Название')->searchable()
+                ->description(fn (ReportType $record): string => $record->key),
             IconColumn::make('is_base')->label('Базовый')->boolean(),
             IconColumn::make('is_required')->label('Обязательный')->boolean(),
             IconColumn::make('auto_create')->label('Автоматически')->boolean(),

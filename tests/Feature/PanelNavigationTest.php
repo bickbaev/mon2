@@ -2,6 +2,9 @@
 
 use App\Enums\NodeType;
 use App\Filament\Pages\BaseReports;
+use App\Filament\Resources\Campaigns\CampaignResource;
+use App\Filament\Resources\CampaignTemplates\CampaignTemplateResource;
+use App\Filament\Resources\ReportTypes\ReportTypeResource;
 use App\Models\User;
 use App\Services\NodeService;
 use Filament\Facades\Filament;
@@ -50,6 +53,25 @@ test('organization opening cabinet is redirected to assigned reports', function 
     $this->get('/cabinet')->assertRedirect(BaseReports::getUrl(panel: 'app'));
     $this->get(BaseReports::getUrl(panel: 'app'))->assertOk();
 });
+
+test('collection management sections require launch permission', function (bool $canStart) {
+    $user = panelNavigationUser(NodeType::Authority);
+    $user->forceFill(['can_start_campaigns' => $canStart])->save();
+    $this->actingAs($user);
+
+    foreach ([
+        ReportTypeResource::class,
+        CampaignResource::class,
+        CampaignTemplateResource::class,
+    ] as $resource) {
+        $response = $this->get($resource::getUrl('index'));
+        if ($canStart) {
+            $response->assertOk();
+        } else {
+            $response->assertForbidden();
+        }
+    }
+})->with([true, false]);
 
 test('dashboard remains available for authorities and administrator', function (?NodeType $type) {
     $this->actingAs(panelNavigationUser($type));

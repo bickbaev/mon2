@@ -48,10 +48,11 @@ test('campaign and template pages scope records and reject users without launch 
     [$actor, , , $school, , $foreign] = campaignContext();
     $campaign = app(CampaignService::class)->start($actor, campaignData(), new NodeSelection([$school->id]));
     $template = app(CampaignTemplateService::class)->create($actor, array_merge(campaignData(), ['periodicity' => 'weekly', 'start_weekday' => 1, 'duration_days' => 5]), new NodeSelection([$school->id]));
-    $stranger = User::factory()->create(['node_id' => $foreign->id, 'pd_consent_at' => now()]);
+    $stranger = User::factory()->create(['node_id' => $foreign->id, 'pd_consent_at' => now(), 'can_start_campaigns' => true]);
     $this->actingAs($stranger);
     Livewire::test(ListCampaigns::class)->assertCanNotSeeTableRecords([$campaign]);
     Livewire::test(ListCampaignTemplates::class)->assertCanNotSeeTableRecords([$template]);
+    $stranger->forceFill(['can_start_campaigns' => false])->save();
     $this->get(CampaignResource::getUrl('create'))->assertForbidden();
     $this->get(CampaignTemplateResource::getUrl('create'))->assertForbidden();
     $this->get(CampaignTemplateResource::getUrl('edit', ['record' => $template]))->assertNotFound();
@@ -78,7 +79,7 @@ test('participant modal shows an error when chosen node leaves the owners branch
     $record = $isTemplate
         ? app(CampaignTemplateService::class)->create($actor, array_merge(campaignData(), ['periodicity' => 'weekly', 'start_weekday' => 1, 'duration_days' => 5]), new NodeSelection([$school->id]))
         : app(CampaignService::class)->start($actor, campaignData(), new NodeSelection([$school->id]));
-    $superior = User::factory()->create(['node_id' => $root->id]);
+    $superior = User::factory()->create(['node_id' => $root->id, 'can_start_campaigns' => true]);
     $this->actingAs($superior);
     $page = Livewire::test($isTemplate ? ListCampaignTemplates::class : ListCampaigns::class)->mountTableAction('addNode', $record)->setTableActionData(['node_id' => $branch->id]);
     $serviceClass = $isTemplate ? CampaignTemplateService::class : CampaignService::class;

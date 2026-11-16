@@ -27,6 +27,34 @@ test('assigned reports page renders two separate tables', function () {
         ->assertCanNotSeeTableRecords([$report]);
 });
 
+test('assigned tables show only reports of the current node including for administrators', function (string $role) {
+    [$authority, , $district, $school, $branch] = campaignContext();
+    $own = Report::factory()->create(['node_id' => $district->id]);
+    $schoolReport = Report::factory()->create(['node_id' => $school->id]);
+    $branchReport = Report::factory()->create(['node_id' => $branch->id]);
+    $base = Report::factory()->create(['report_type_id' => ReportType::factory()->base(), 'campaign_id' => null, 'node_id' => $school->id]);
+    $actor = match ($role) {
+        'authority' => $authority,
+        'organization' => User::factory()->create(['node_id' => $school->id]),
+        'administrator with node' => User::factory()->create(['is_admin' => true, 'node_id' => $school->id]),
+        default => User::factory()->create(['is_admin' => true]),
+    };
+    $this->actingAs($actor);
+
+    $campaignTable = Livewire::test(CampaignReports::class);
+    $baseTable = Livewire::test(BaseReports::class);
+    if ($role === 'authority') {
+        $campaignTable->assertCanSeeTableRecords([$own])->assertCanNotSeeTableRecords([$schoolReport, $branchReport]);
+        $baseTable->assertCanNotSeeTableRecords([$base]);
+    } elseif ($actor->node_id === $school->id) {
+        $campaignTable->assertCanSeeTableRecords([$schoolReport])->assertCanNotSeeTableRecords([$own, $branchReport]);
+        $baseTable->assertCanSeeTableRecords([$base]);
+    } else {
+        $campaignTable->assertCountTableRecords(0);
+        $baseTable->assertCountTableRecords(0);
+    }
+})->with(['authority', 'organization', 'administrator with node', 'administrator without node']);
+
 test('campaign table shows own open reports and excludes base foreign and closed reports', function () {
     $open = Report::factory()->create();
     $actor = User::factory()->create(['node_id' => $open->node_id, 'pd_consent_at' => now()]);

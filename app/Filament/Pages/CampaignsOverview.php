@@ -11,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 
 class CampaignsOverview extends Page implements HasTable
 {
@@ -27,6 +28,11 @@ class CampaignsOverview extends Page implements HasTable
 
     private bool $countsLoaded = false;
 
+    public static function getNavigationIcon(): Htmlable
+    {
+        return view('filament.pages.ri-progress-2-line');
+    }
+
     public static function canAccess(): bool
     {
         return app(StatisticsAccess::class)->allowed();
@@ -36,9 +42,9 @@ class CampaignsOverview extends Page implements HasTable
     {
         return $table->query(fn () => app(StatisticsAccess::class)->campaigns()->with('reportType'))
             ->columns([
-                TextColumn::make('reportType.title')->label('Вид отчёта')->description(fn (Campaign $record): ?string => $record->title)->url(fn (Campaign $record): string => CampaignStats::getUrl(['campaign' => $record->id])),
-                TextColumn::make('starts_at')->label('Начало периода')->date('d.m.Y'),
-                TextColumn::make('ends_at')->label('Конец периода')->date('d.m.Y'),
+                TextColumn::make('reportType.title')->label('Вид отчёта')->wrap()
+                    ->formatStateUsing(fn (string $state, Campaign $record): string => $state.' ('.$record->starts_at->format('d.m.Y').'-'.$record->ends_at->format('d.m.Y').')')
+                    ->description(fn (Campaign $record): ?string => $record->title)->url(fn (Campaign $record): string => CampaignStats::getUrl(['campaign' => $record->id])),
                 ...$this->countColumns(),
             ])->defaultSort('id', 'desc');
     }

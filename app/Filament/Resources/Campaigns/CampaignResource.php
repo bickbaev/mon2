@@ -50,10 +50,8 @@ class CampaignResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('title')->label('Название')->placeholder('Без названия')->searchable(),
-            TextColumn::make('reportType.title')->label('Вид отчёта')->wrap(),
-            TextColumn::make('starts_at')->label('Начало')->date('d.m.Y'),
-            TextColumn::make('ends_at')->label('Сдать до')->date('d.m.Y'),
+            TextColumn::make('title')->label('Сбор')->placeholder('Без названия')->searchable()->wrap()
+                ->description(fn (Campaign $record): string => $record->reportType->title.' ('.$record->starts_at->format('d.m.Y').'-'.$record->ends_at->format('d.m.Y').')'),
             TextColumn::make('closes_at')->label('Закрытие')->date('d.m.Y')->placeholder('Вручную'),
             TextColumn::make('reports_count')->label('Отчётов'),
             TextColumn::make('closed_at')->label('Состояние')->state(fn (Campaign $record): string => $record->isClosed() ? 'Закрыт' : 'Открыт')->badge(),
@@ -66,11 +64,11 @@ class CampaignResource extends Resource
                 ->action(function (Campaign $record, array $data, CampaignService $service, Schema $schema): void {
                     CampaignFields::withParticipantErrors(fn () => $service->addNode(CampaignFields::actor(), $record, Node::query()->findOrFail($data['node_id'])), $schema);
                 }),
-            Action::make('blockAll')->label('Заблокировать все отчёты')->requiresConfirmation()
+            Action::make('blockAll')->label('Заблокировать отчеты')->requiresConfirmation()
                 ->modalDescription('Все отчёты сбора, включая принятые, получат статус «Заблокирован».')
                 ->visible(fn (Campaign $record): bool => Gate::forUser(CampaignFields::actor())->allows('manage', $record))
                 ->action(fn (Campaign $record, CampaignService $service): int => $service->blockAll(CampaignFields::actor(), $record)),
-            Action::make('close')->label('Закрыть сбор')->requiresConfirmation()
+            Action::make('close')->label('Закрыть')->requiresConfirmation()
                 ->modalDescription('После закрытия добавлять узлы, изменять отчёты и их статусы нельзя.')
                 ->visible(fn (Campaign $record): bool => Gate::forUser(CampaignFields::actor())->allows('manage', $record))
                 ->action(fn (Campaign $record, CampaignService $service) => $service->close(CampaignFields::actor(), $record)),

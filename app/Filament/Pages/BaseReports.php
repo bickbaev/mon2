@@ -44,7 +44,7 @@ class BaseReports extends Page implements HasTable
             $actor = self::currentActor();
             $query = Report::query()->whereNull('campaign_id')->with(['node', 'reportType']);
 
-            return $actor === null ? $query->whereRaw('1 = 0') : $query->inBranchOf($actor);
+            return $actor?->node_id === null ? $query->whereRaw('1 = 0') : $query->where('node_id', $actor->node_id);
         })->columns([
             TextColumn::make('node.name')->label('Организация')->searchable(),
             TextColumn::make('reportType.title')->label('Отчёт'),
